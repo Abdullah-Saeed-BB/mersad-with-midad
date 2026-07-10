@@ -54,10 +54,9 @@ git clone https://github.com/Abdullah-Saeed-BB/Mersad-1.0-organized.git
 بعد التحميل, اذهب لملف الـ `src/index.html` واضغط على زر الماوس الأيمن, واضغط على خيار  **"Open with Live Server"** وسيفتح لك المتصفح مع صفحة التطبيق. (الـ URL للصفحة: `127.0.0.1:5500/src/index.html`)
 
 ### تثبيت خطوط ثمانية
-
 إذهب لي موقع الرسمي لي [خطوط ثمانية](https://font.thmanyah.com/) وقم بي تحميل الخطوط, بعد تحميل وفك الضغط للمجلد, إذهب لي مجلد `thmanyah typeface`  وسيتواجد مجلدين اساسين هما:
- - مجلد thmanyahsans.
- - مجلد thmanyahserifdisplay.
+- مجلد `thmanyahsans`.
+- مجلد `thmanyahserifdisplay`.
 
 قم بنسخ جميع الخطوط المتواجدة في `thmanyahsans\otf`, ثم اذهب لي محتويات المشروع والصقها في مسار `src\assets\fonts\thmanyahsans`, وقم بنفس العملية للمسار الاخر, نسخ جميع الخطوط المتواجدة في `thmanyahserifdisplay/otf`, ثم الذهاب لمحتويات المشروع والصقها في مسار `src\assets\fonts\thmanyahserifdisplay`.
 
