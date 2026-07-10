@@ -3,4 +3,4 @@ backup/
 src/assets/fonts/*/*
 
 # unrelated to project
-system
+_*
