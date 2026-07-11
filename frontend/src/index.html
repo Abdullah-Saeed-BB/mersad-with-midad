@@ -7,9 +7,11 @@
 
   <!-- CSS -->
   <link rel="stylesheet" href="./styles/global.css" />
+  <link rel="stylesheet" href="./styles/ai-elements.css" />
+  <link rel="stylesheet" href="./styles/index.css" />
 
   <!-- PWA -->
-  <link rel="manifest" href="/manifest.json">
+  <link rel="manifest" href="../manifest.json">
   <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
 
@@ -17,13 +19,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="مِرصاد">
-  <link rel="apple-touch-icon" href="/public/icon-192.png">
+  <link rel="apple-touch-icon" href="../public/icon-192.png">
 
   <!-- Android / general -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="application-name" content="مِرصاد">
-  <link rel="icon" type="image/png" sizes="192x192" href="/public/icon-192.png">
-  <link rel="stylesheet" href="./styles/index.css" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../public/icon-192.png">
 <!-- Google Identity Services — works inside iOS WKWebView (no redirect/popup needed) -->
   <script src="./js/auth.js"></script>
 </head>
@@ -684,6 +685,56 @@
 
 <!-- ══ Script Editor Overlay ══ -->
 <div class="ce-overlay" id="ceOverlay" style="display:none">
+  <!-- Prompt Popup -->
+  <button
+    id="ceSelectionIcon"
+    class="ce-floating-btn"
+    style="display:none;"
+    title="خيارات إضافية"
+  >
+    <img
+      src="assets/images/midad_icon.jpg"
+      alt="مداد"
+      draggable="false"
+    >
+  </button>
+
+  <div id="ceTopPopup" class="ce-top-popup" style="display:none;">
+    <button
+      class="ce-popup-close"
+      type="button"
+      onclick="closeTopPopup()"
+      aria-label="إغلاق">
+      ×
+    </button>
+    <div class="ce-popup-content">
+      <h2 class="ce-popup-title">
+          عنوان
+      </h2>
+      <input
+        id="cePopupInput"
+        class="ce-popup-input"
+        type="text"
+        placeholder="اكتب هنا..."
+      >
+      <div class="ce-popup-actions">
+        <button
+          class="btn btn-glass"
+          type="button"
+          onclick="closeTopPopup()">
+          إلغاء
+        </button>
+        
+        <button class="btn btn-filled" id="cePopupSubmit">
+          ارسال
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+
+
   <div class="ce-minimal-bar">
     <button class="btn btn-glass btn-sm" onclick="closeContentEditor()" title="حفظ وإغلاق المحرر">✓ حفظ</button>
     <span class="ce-proj-name" id="ceProjName" contenteditable="true"
@@ -732,6 +783,9 @@
 
 <!-- Service Worker registration -->
 <script src="js/service-worker.js"></script>
+
+<!-- AI Actions -->
+<script src="js/ai-actions.js"></script>
 
 <!-- ═══════════════════ TELEPROMPTER CONTROL ═══════════════════ -->
 <div style="display:none" id="tpOverlay">

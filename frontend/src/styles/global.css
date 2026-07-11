@@ -34,22 +34,22 @@
     font-style: normal;
     font-display: swap;
 }
+
+/* Loading Thmanyah Serif Display */
 @font-face {
     font-family: 'ThmanyahSerifDisplay';
-    src: url('../assets/fonts/thmanyahsans/thmanyahserifdisplay-Light.otf') format('opentype');
+    src: url('../assets/fonts/thmanyahserifdisplay/thmanyahserifdisplay-Light.otf') format('opentype');
     font-weight: 300;
     font-style: normal;
     font-display: swap;
 }
 @font-face {
     font-family: 'ThmanyahSerifDisplay';
-    src: url('../assets/fonts/thmanyahsans/thmanyahserifdisplay-Regular.otf') format('opentype');
+    src: url('../assets/fonts/thmanyahserifdisplay/thmanyahserifdisplay-Regular.otf') format('opentype');
     font-weight: 400;
     font-style: normal;
     font-display: swap;
 }
-
-/* Loading Thmanyah Serif Display */
 @font-face {
     font-family: 'ThmanyahSerifDisplay';
     src: url('../assets/fonts/thmanyahserifdisplay/thmanyahserifdisplay-Medium.otf') format('opentype');

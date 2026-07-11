@@ -11,13 +11,13 @@
   "dir": "rtl",
   "icons": [
     {
-      "src": "/public/icon-192.png",
+      "src": "./public/icon-192.png",
       "sizes": "922x924",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/public/icon-512.png",
+      "src": "./public/icon-512.png",
       "sizes": "922x924",
       "type": "image/png",
       "purpose": "any"
