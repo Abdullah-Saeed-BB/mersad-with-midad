@@ -1,5 +1,4 @@
-import { ceUpdateStats, ceUpdateWriterPh, ceWriterSave, uid } from './main.js';
-
+import { ceUpdateStats, ceUpdateWriterPh, ceWriterSave, uid, getAllProjects } from './main.js';
 
 let selectedText = null
 let currentSelectionRange = null;
@@ -61,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // 3. Popup Utilities
-function showTopPopup(message) {
+async function showTopPopup(message) {
   const popup = document.getElementById('ceTopPopup');
 
   if (!popup) return;
@@ -73,7 +72,7 @@ function showTopPopup(message) {
   });
 }
 
-function closeTopPopup() {
+export function closeTopPopup() {
   const popup = document.getElementById('ceTopPopup');
   if (!popup) return;
 
@@ -240,7 +239,141 @@ async function submitPrompt() {
   }
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+  const promptInput = document.getElementById('cePromptInput');
+  const dropdown = document.getElementById('ceMentionDropdown');
+
+  let activeIndex = 0;
+  let projectsList = [];
+  let currentMentionRange = null;
+
+  if (!promptInput || !dropdown) return;
+
+  // 1. Listen for key inputs inside contenteditable box
+  promptInput.addEventListener('keydown', (e) => {
+    if (dropdown.style.display === 'block') {
+      const items = dropdown.querySelectorAll('.ce-mention-item');
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeIndex = (activeIndex + 1) % items.length;
+        updateActiveItem(items);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeIndex = (activeIndex - 1 + items.length) % items.length;
+        updateActiveItem(items);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (items[activeIndex]) items[activeIndex].click();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        hideDropdown();
+      }
+    }
+  });
+
+  promptInput.addEventListener('input', async () => {
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+
+    const range = sel.getRangeAt(0);
+    const textBeforeCaret = range.startContainer.textContent || '';
+    const caretOffset = range.startOffset;
+
+    // Look backward from cursor to find the closest '@' symbol
+    const lastAt = textBeforeCaret.lastIndexOf('@', caretOffset - 1);
+
+    if (lastAt !== -1 && !textBeforeCaret.substring(lastAt, caretOffset).includes(' ')) {
+      const query = textBeforeCaret.substring(lastAt + 1, caretOffset).toLowerCase();
+
+      // Store the range location where the text query was written
+      currentMentionRange = range.cloneRange();
+      currentMentionRange.setStart(range.startContainer, lastAt);
+      currentMentionRange.setEnd(range.startContainer, caretOffset);
+
+      if (projectsList.length === 0) {
+        try { projectsList = await getAllProjects(); } catch (err) { projectsList = []; }
+      }
+
+      const filtered = projectsList.filter(p => (p.name || '').toLowerCase().includes(query));
+
+      if (filtered.length > 0) {
+        renderDropdown(filtered);
+      } else {
+        hideDropdown();
+      }
+    } else {
+      hideDropdown();
+    }
+  });
+
+  function renderDropdown(list) {
+    dropdown.innerHTML = '';
+    activeIndex = 0;
+
+    list.forEach((project, idx) => {
+      const item = document.createElement('div');
+      item.className = 'ce-mention-item';
+      if (idx === 0) item.classList.add('active');
+      item.textContent = project.name;
+
+      item.addEventListener('click', () => {
+        if (!currentMentionRange) return;
+
+        // Delete the typed query string (@name)
+        currentMentionRange.deleteContents();
+
+        // Create the protected badge element
+        const badge = document.createElement('span');
+        badge.className = 'ce-script-badge';
+        badge.contentEditable = 'false'; // Locks it so user can't break text internally
+        badge.dataset.id = project.id;
+        badge.dataset.name = project.name;
+        badge.textContent = `📁 ${project.name}`;
+
+        // Insert badge and an adjoining empty space to keep typing smoothly
+        currentMentionRange.insertNode(badge);
+        
+        const spaceNode = document.createTextNode('\u00A0'); // Non-breaking space
+        badge.insertAdjacentElement('afterend', document.createElement('span')).appendChild(spaceNode);
+
+        // Advance cursor position directly after the inserted text space
+        const sel = window.getSelection();
+        const nextRange = document.createRange();
+        nextRange.setStartAfter(spaceNode);
+        nextRange.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(nextRange);
+
+        hideDropdown();
+        promptInput.focus();
+      });
+
+      dropdown.appendChild(item);
+    });
+
+    dropdown.style.display = 'block';
+    dropdown.style.top = `${promptInput.offsetTop + promptInput.offsetHeight}px`;
+    dropdown.style.left = `${promptInput.offsetLeft}px`;
+    dropdown.style.width = `${promptInput.offsetWidth}px`;
+  }
+
+  function updateActiveItem(items) {
+    items.forEach(item => item.classList.remove('active'));
+    if (items[activeIndex]) {
+      items[activeIndex].classList.add('active');
+      items[activeIndex].scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  function hideDropdown() { dropdown.style.display = 'none'; }
+  document.addEventListener('click', (e) => {
+    if (e.target !== promptInput && !dropdown.contains(e.target)) hideDropdown();
+  });
+});
+
 const submitButton = document.getElementById("cePromptSubmit");
 submitButton.addEventListener("click", async () => {
    await submitPrompt()
 });
+
+window.closeTopPopup = closeTopPopup;

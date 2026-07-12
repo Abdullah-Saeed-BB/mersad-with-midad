@@ -133,7 +133,8 @@ const permDeleteFromTrash = id => storeTrash(loadTrash().filter(x => x.id !== id
 // ══════════════════════════════════════════
 let saveProject    = async (p) => { upsertLS(p); };
 let deleteProject  = async (p) => { delLS(p.id); };
-let getAllProjects  = async ()  => loadLS();
+export let getAllProjects  = async ()  => loadLS();
+
 
 // ══════════════════════════════════════════
 //  Utilities

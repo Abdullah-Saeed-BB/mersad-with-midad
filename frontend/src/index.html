@@ -709,16 +709,34 @@
     </button>
     <div class="ce-popup-content">
       <h2 class="ce-popup-title">
-          مِداد - مساعدك في الالهام والابداع
+        مِداد - مساعدك في الالهام والابداع
       </h2>
       <p class="ce-popup-description">
         ما هو محتوى المشهد? وإلخ مباشرة
       </p>
-      <textarea
+      
+      <!-- <textarea
         id="cePromptInput"
         class="ce-prompt-input"
         placeholder="اكتب هنا..."
-        ></textarea>
+        ></textarea> -->
+
+
+      <div class="ce-prompt-container">
+        <div
+          id="cePromptInput"
+          class="ce-prompt-input"
+          contenteditable="true"
+          role="textbox"
+          aria-multiline="true"
+          data-placeholder="اكتب هنا..."
+        ></div>
+        
+        <div id="ceMentionDropdown" class="ce-mention-dropdown" style="display: none;"></div>
+      </div>
+
+        
+      <div id="ceMentionDropdown" class="ce-mention-dropdown" style="display: none;"></div>
       <div class="ce-popup-actions">
         <button
           class="btn btn-glass"
@@ -726,13 +744,10 @@
           onclick="closeTopPopup()">
           إلغاء
         </button>
-        
         <button class="btn btn-filled" id="cePromptSubmit">
           ارسال
         </button>
-
       </div>
-
     </div>
   </div>
 

@@ -175,38 +175,60 @@
 }
 
 /* ==========================================================
-   Input
+   Textbox
 ========================================================== */
+
+.ce-prompt-container {
+    position: relative;
+    width: 100%;
+}
 
 .ce-prompt-input {
     width: 100%;
+    min-height: 110px;
+    max-height: 220px;
 
-    padding: 12px 14px;
+    overflow-y: auto;
 
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
+    padding: 14px 16px;
+
+    box-sizing: border-box;
 
     background: var(--surface-1);
     color: var(--text-1);
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
 
     font-family: var(--font-body);
     font-size: 14px;
     line-height: 1.55;
 
+    direction: rtl;
+    text-align: right;
+
+    white-space: pre-wrap;
+    word-break: break-word;
+
     transition:
         border-color .18s ease,
-        box-shadow .18s ease,
-        background .18s ease;
-}
-
-.ce-prompt-input::placeholder {
-    color: var(--text-3);
+        background .18s ease,
+        box-shadow .18s ease;
 }
 
 .ce-prompt-input:focus {
     outline: none;
-    border-color: var(--accent);
+    border-color: var(--border-focus);
     box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.ce-prompt-input:empty::before {
+    content: attr(data-placeholder);
+
+    color: var(--placeholder);
+
+    pointer-events: none;
+    user-select: none;
 }
 
 /* ==========================================================
@@ -217,4 +239,151 @@
     display: flex;
     justify-content: flex-end;
     gap: 10px;
+}
+
+.ce-input-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+/* ==========================================================
+   Scripts Dropdown
+========================================================== */
+
+.ce-mention-dropdown {
+    position: absolute;
+
+    top: calc(100% + 8px);
+    right: 0;
+
+    z-index: 2500;
+
+    width: 100%;
+    max-height: 220px;
+
+    overflow-y: auto;
+
+    background: var(--surface-2);
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+
+    box-shadow: 0 4px 28px rgba(0,0,0,.35);
+
+    direction: rtl;
+
+    animation: ceMentionFade .18s ease;
+}
+
+.ce-mention-item {
+    padding: 11px 14px;
+    background: rgba(82, 82, 82, 0.6);
+
+    color: var(--text-1);
+
+    font-family: var(--font-body);
+    font-size: 14px;
+
+    cursor: pointer;
+
+    text-align: right;
+
+    transition:
+        background .15s ease,
+        color .15s ease;
+}
+
+.ce-mention-item + .ce-mention-item {
+    border-top: 1px solid rgba(255,255,255,.05);
+}
+
+.ce-mention-item:hover,
+.ce-mention-item.active {
+    background: rgba(42, 63, 84, 0.8);
+    color: var(--accent);
+}
+
+.ce-prompt-input::-webkit-scrollbar,
+.ce-mention-dropdown::-webkit-scrollbar {
+    width: 8px;
+}
+
+.ce-prompt-input::-webkit-scrollbar-thumb,
+.ce-mention-dropdown::-webkit-scrollbar-thumb {
+    background: var(--surface-3);
+    border-radius: 999px;
+}
+
+.ce-prompt-input::-webkit-scrollbar-track,
+.ce-mention-dropdown::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* ==========================================================
+   Textbox Badges
+========================================================== */
+
+.ce-script-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    margin: 2px 4px;
+    padding: 4px 10px;
+
+    border-radius: 999px;
+
+    border: 1px solid rgba(10,132,255,.28);
+
+    background: rgba(10,132,255,.10);
+
+    color: var(--accent);
+
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+
+    white-space: nowrap;
+
+    user-select: none;
+    vertical-align: middle;
+
+    transition:
+        background .18s ease,
+        border-color .18s ease,
+        transform .18s ease;
+}
+
+.ce-script-badge:hover {
+    background: rgba(10,132,255,.16);
+    border-color: rgba(10,132,255,.45);
+}
+
+@keyframes ceMentionFade {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .ce-prompt-input,
+    .ce-script-badge,
+    .ce-mention-dropdown,
+    .ce-mention-item {
+        transition: none;
+        animation: none;
+    }
+
 }
