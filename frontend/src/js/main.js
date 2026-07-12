@@ -138,7 +138,7 @@ let getAllProjects  = async ()  => loadLS();
 // ══════════════════════════════════════════
 //  Utilities
 // ══════════════════════════════════════════
-const uid   = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+export const uid   = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 // Cryptographically-random id for capability URLs (share links). Math.random()
 // is predictable and must not gate access to shared data.
 const secureId = () => (self.crypto && crypto.randomUUID)
@@ -5541,14 +5541,14 @@ function _ceCursorEnd(el) {
   sel.addRange(r);
 }
 
-function ceUpdateWriterPh() {
+export function ceUpdateWriterPh() {
   const div = document.getElementById('ceWriterDiv');
   const ph  = document.getElementById('ceWriterPh');
   if (!ph) return;
   ph.style.display = div && div.textContent.trim() ? 'none' : 'block';
 }
 
-function ceUpdateStats() {
+export function ceUpdateStats() {
   const div = document.getElementById('ceWriterDiv');
   if (!div) return;
   let segs = 0, shots = 0, words = 0;
@@ -5615,7 +5615,7 @@ function ceToggleAllCollapse() {
   }
 }
 
-function ceWriterSave() {
+export function ceWriterSave() {
   const div = document.getElementById('ceWriterDiv');
   if (!cur || !div) return;
 

@@ -45,16 +45,22 @@ async def stream_write(prompt: str, language: str = "en") -> AsyncGenerator[str,
             "الكلام الي قاعد اكتبه مجرد استهبال فكر قبل ما تقرأ "
             "ايش رايك بي طبقة الاوزون,\n الصراحة ما افضلها زي الكبسة "
             "المفروض ما يكون فيه نصوص معمولة بالذكاء الاصطناعي حالياً "
-            "تسألني ليش؟\n\nاقلك مدري بس كذا, الزبدة, شكلي بنهي هنا "
+            "تسألني ليش؟\n\nاقلك مدري بس كذا, الزبدة, شكلي بنهي هنا\n "
+            "# المقطع الأول\n"
+            "## المشهد الأول | في له عدة شخصيات\n"
+            "محتوى المشهد الي في له عدة شخصيات"
         )
     else:
         mock_response = (
             f"[Mock Write - language: {language}]\n\n"
             f'Generating content for prompt: "{prompt}"\n\n'
-            "Improved version: "
-            "1. This First Milk\n"
-            " 2. This Second Egg\n"
-            "3. This Third Wheat \n"
+            "# Improved version:\n"
+            "## This First\n"
+            "Milk\n"
+            "## This Second\n"
+            "Egg\n"
+            "## This Third\n"
+            "Wheat\n"
         )
     
     for word in mock_response.split(" "):

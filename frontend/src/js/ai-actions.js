@@ -1,3 +1,6 @@
+import { ceUpdateStats, ceUpdateWriterPh, ceWriterSave, uid } from './main.js';
+
+
 let selectedText = null
 let currentSelectionRange = null;
 
@@ -84,15 +87,6 @@ function closeTopPopup() {
   }, 300);
 }
 
-// function submitPrompt() {
-//   const prompt = document.getElementById("cePromptInput").value;
-  
-//   console.log("Prompt:", prompt);
-//   console.log("Text Selected:", selectedText);
-//   console.log("Text Sel Range:", currentSelectionRange);
-// }
-
-
 async function submitPrompt() {
   const inputEl = document.getElementById('cePromptInput');
   if (!inputEl) return;
@@ -105,19 +99,51 @@ async function submitPrompt() {
     return;
   }
 
+  const writer = document.getElementById('ceWriterDiv');
+  if (!writer) return;
+
   const selectedTextText = currentSelectionRange.toString();
 
-  // 1. Prepare container for live injection
+  // 1. Clean the old selection coordinates
   currentSelectionRange.deleteContents();
   
-  // Create a document fragment wrapper to hold our streaming nodes securely
-  const streamContainer = document.createElement('span');
-  currentSelectionRange.insertNode(streamContainer);
+  // Find or create a clean starting block-level div for streaming text inside the editor
+  let activeLineDiv = currentSelectionRange.anchorNode;
+  while (activeLineDiv && activeLineDiv.parentElement !== writer) {
+    activeLineDiv = activeLineDiv.parentElement;
+  }
+  
+  if (!activeLineDiv || activeLineDiv.nodeType !== 1) {
+    activeLineDiv = document.createElement('div');
+    currentSelectionRange.insertNode(activeLineDiv);
+  }
+  
   currentSelectionRange = null;
 
-  // Track the active text node we are writing text characters into
+  // Track text updates smoothly
   let currentActiveTextNode = document.createTextNode("");
-  streamContainer.appendChild(currentActiveTextNode);
+  activeLineDiv.appendChild(currentActiveTextNode);
+
+  // Helper utility to evaluate Markdown tags (# and ##) ONLY on a completed block-level row div
+  function evaluateLineSyntax(divElement) {
+    if (!divElement || divElement.dataset.ltype) return;
+
+    // Strip out BIDI control codes and get raw content
+    const rawText = (divElement.textContent || '').replace(/\p{Cf}/gu, '').trim();
+
+    if (/^##\s/.test(rawText)) {
+      divElement.dataset.ltype = 'shot';
+      if (!divElement.dataset.rid) divElement.dataset.rid = uid();
+      divElement.textContent = rawText.replace(/^##\s+/, '');
+      if (!divElement.textContent) divElement.innerHTML = '<br>';
+    } else if (/^#\s/.test(rawText)) {
+      divElement.dataset.ltype = 'seg';
+      if (!divElement.dataset.rid) divElement.dataset.rid = uid();
+      divElement.textContent = rawText.replace(/^#\s+/, '');
+      if (!divElement.textContent) divElement.innerHTML = '<br>';
+    }
+  }
+
   try {
     const response = await fetch('http://localhost:8000/ai/write', { 
       method: 'POST',
@@ -125,7 +151,6 @@ async function submitPrompt() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        // "selected_text": selectedTextText,
         "prompt": promptText,
         "language": "ar"
       })
@@ -175,15 +200,36 @@ async function submitPrompt() {
 
         for (const item of components) {
           if (item === '\n') {
-            streamContainer.appendChild(document.createElement('br'));
+            // ── FIX: Evaluate line syntax ONLY when the line is completely finished ──
+            evaluateLineSyntax(activeLineDiv);
+
+            // Generate an official structural paragraph row child element
+            const newLineDiv = document.createElement('div');
+            
+            // Append right after our current operational element block
+            activeLineDiv.insertAdjacentElement('afterend', newLineDiv);
+            activeLineDiv = newLineDiv;
+            
             currentActiveTextNode = document.createTextNode("");
-            streamContainer.appendChild(currentActiveTextNode);
+            activeLineDiv.appendChild(currentActiveTextNode);
           } else if (item) {
             currentActiveTextNode.appendData(item);
+            // REMOVED evaluateLineSyntax from here so it doesn't interrupt mid-word streaming
           }
         }
+        
+        // Refresh structural UI parameters, counter displays, and placeholder properties
+        ceUpdateWriterPh();
+        ceUpdateStats();
       }
     }
+
+    // Final sweep check on the closing block element line state boundary
+    evaluateLineSyntax(activeLineDiv);
+    
+    // Trigger deep rebuild save cycle to compile elements cleanly into internal state models
+    ceWriterSave();
+    if (typeof autoSave === 'function') autoSave();
 
     inputEl.value = ""; 
     closeTopPopup();
