@@ -4,7 +4,6 @@ import { getVideoScriptMarkdown, getProjectMarkdown, refreshProjects } from './g
 let selectedText = null
 let currentSelectionRange = null;
 let currentAIActionType = null
-let savedInsertionAnchorDiv = null; // Direct ref to the writer block-div where caret was when add-new-part popup opened
 
 document.addEventListener('DOMContentLoaded', () => {
   const writerDiv = document.getElementById('ceWriterDiv');
@@ -78,32 +77,17 @@ document.addEventListener('DOMContentLoaded', () => {
 // 3. Popup Utilities
 // Types of popups: write-from-scratch, improve-part, add-new-part
 async function showTopPopup(type) {
-  // Capture the caret position SYNCHRONOUSLY before any await, so the async
-  // yield from refreshProjects() cannot lose the editor selection.
-  if (type === 'add-new-part') {
-    savedInsertionAnchorDiv = null;
-    const writer = document.getElementById('ceWriterDiv');
-    if (writer) {
-      const sel = window.getSelection();
-      let node = (sel && sel.rangeCount > 0)
-        ? sel.getRangeAt(0).startContainer
-        : (currentSelectionRange ? currentSelectionRange.startContainer : null);
-
-      // Walk up until we reach a direct child of the writer
-      while (node && node.parentElement !== writer) {
-        node = node.parentElement;
-      }
-      if (node && node.nodeType === 1) {
-        savedInsertionAnchorDiv = node;
-      }
-    }
-  } else {
-    savedInsertionAnchorDiv = null;
-  }
-
   await refreshProjects();
 
   currentAIActionType = type
+
+  if (type === 'add-new-parts' || type === 'add-new-part') {
+    const sel = window.getSelection();
+    const writerDiv = document.getElementById('ceWriterDiv');
+    if (sel && sel.rangeCount > 0 && writerDiv && writerDiv.contains(sel.anchorNode)) {
+      currentSelectionRange = sel.getRangeAt(0).cloneRange();
+    }
+  }
 
   const popup = document.getElementById('ceTopPopup');
   const description = document.getElementById('cePopupDescription');
@@ -112,7 +96,7 @@ async function showTopPopup(type) {
     let newDesc = "معك مِداد, "
     if (type == 'improve-part') {
       newDesc = newDesc + 'ما الذي تريد تحسينه في النص المحدد؟'
-    } else if (type == 'add-new-part') {
+    } else if (type == 'add-new-parts') {
       newDesc = newDesc + 'ما هي المشاهد التي تريد اضافتها؟'
     } else {
       newDesc = newDesc + 'ماذا تريدني ان اكتب لك؟'
@@ -190,46 +174,31 @@ async function submitPrompt() {
   const writer = document.getElementById('ceWriterDiv');
   if (!writer) return;
 
-  // ── Determine the starting insertion point ──────────────────────────────────
+  // 1. Clean the old selection coordinates
+  if (currentSelectionRange) {
+    currentSelectionRange.deleteContents();
+  }
+  
+  // Find or create a clean starting block-level div for streaming text inside the editor
   let activeLineDiv = null;
 
-  if (currentAIActionType === 'add-new-part') {
-    // We have a direct reference to the block-div the caret was in when the
-    // popup opened — no Range walking needed, no content is deleted.
-    const anchorDiv = savedInsertionAnchorDiv;
-    savedInsertionAnchorDiv = null;
-    currentSelectionRange = null;
-
-    const newDiv = document.createElement('div');
-    if (anchorDiv && writer.contains(anchorDiv)) {
-      // Insert the new blank div immediately after the anchor line
-      anchorDiv.insertAdjacentElement('afterend', newDiv);
-    } else {
-      // Fallback: caret wasn't tracked — append at the end
-      writer.appendChild(newDiv);
+  if (currentSelectionRange) {
+    activeLineDiv = currentSelectionRange.anchorNode;
+    while (activeLineDiv && activeLineDiv.parentElement !== writer) {
+      activeLineDiv = activeLineDiv.parentElement;
     }
-    activeLineDiv = newDiv;
-
   } else {
-    // improve-part / write-from-scratch: use currentSelectionRange as before
-    if (currentSelectionRange) {
-      currentSelectionRange.deleteContents();
-
-      let anchor = currentSelectionRange.startContainer;
-      while (anchor && anchor.parentElement !== writer) {
-        anchor = anchor.parentElement;
-      }
-      activeLineDiv = (anchor && anchor.nodeType === 1) ? anchor : null;
-    }
-
-    currentSelectionRange = null;
-
-    if (!activeLineDiv) {
-      // write-from-scratch or no range: append at end
-      activeLineDiv = document.createElement('div');
-      writer.appendChild(activeLineDiv);
-    }
+    // Create a new line
+    activeLineDiv = document.createElement('div');
+    writer.appendChild(activeLineDiv);
   }
+  
+  if (!activeLineDiv || activeLineDiv.nodeType !== 1) {
+    activeLineDiv = document.createElement('div');
+    currentSelectionRange.insertNode(activeLineDiv);
+  }
+  
+  currentSelectionRange = null;
 
   // Track text updates smoothly
   let currentActiveTextNode = document.createTextNode("");
@@ -499,7 +468,7 @@ document.addEventListener('keydown', function(event) {
       showTopPopup("improve-part");
     }
     else if (placeholderDisplay === "none") {
-      showTopPopup("add-new-part");
+      showTopPopup("add-new-parts");
     } else {
       showTopPopup("write-from-scratch");
     }
