@@ -1,4 +1,5 @@
 import { ceUpdateStats, ceUpdateWriterPh, ceWriterSave, uid, getAllProjects, _allShots, _findSegForShot } from './main.js';
+import { getVideoScriptMarkdown, getProjectMarkdown, refreshProjects } from './get-scripts.js'
 
 let selectedText = null
 let currentSelectionRange = null;
@@ -60,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showTopPopup('improve-part');
   });
 
+  // Click handler for the Midad button, shows when script empty
   buttonIcon.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -75,6 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // 3. Popup Utilities
 // Types of popups: write-from-scratch, improve-part, add-new-part
 async function showTopPopup(type) {
+  await refreshProjects();
+
   currentAIActionType = type
 
   const popup = document.getElementById('ceTopPopup');
@@ -115,63 +119,45 @@ export function closeTopPopup() {
   }, 300);
 }
 
-async function waitForAllShots({
-  delay = 500,
-  maxRetries = 10
-} = {}) {
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      return _allShots();
-    } catch (err) {
-      console.log(`Erro thorwed (${i}) - let's wait few time ;)`);
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
+async function extarctPromptData(promptElm) {
+  const clone = promptElm.cloneNode(true);
+
+  const badges = clone.querySelectorAll('.ce-script-badge');
+
+  let references = [];
+
+  for (const badge of badges) {
+    const badgeId = badge.dataset.id
+
+    const markdown = await getProjectMarkdown(badgeId);
+
+    const ref = {
+      id: badgeId,
+      title: badge.dataset.name,
+      markdown: markdown,
+    };
+    references.push(ref)
+
+    let badgeText = badge.textContent.trim();
+
+    badgeText = badgeText.replace(/^📁\s*/, '');
+
+    badge.textContent = `(${badgeText})`;
   }
 
-  throw new Error("_allShots() failed after maximum retries.");
-}
-
-async function getVideoScriptMarkdown() {
-  const scenes = await waitForAllShots()
-  
-  const videoGroups = new Map();
-
-  for (const scene of scenes) {
-    const videoTitle = _findSegForShot(scene.id);
-    
-    if (!videoGroups.has(videoTitle.title)) {
-      videoGroups.set(videoTitle.title, []);
-    }
-    
-    videoGroups.get(videoTitle.title).push(scene);
-  }
-
-  // 3. Build the Markdown string
-  let markdown = '';
-
-  for (const [videoTitle, videoScenes] of videoGroups.entries()) {
-    // Add the Video Title (Heading 1)
-    markdown += `# ${videoTitle}\n`;
-
-    // Add each Scene (Heading 2) and its content
-    for (const scene of videoScenes) {
-      markdown += `## ${scene.title}\n`;
-      markdown += `${scene.content}\n\n`;
-    }
-  }
-
-  // Return the final string, trimming any trailing whitespace/newlines
-  return markdown.trim();
+  return [clone.textContent.trim(), references];
 }
 
 async function submitPrompt() {
   const inputEl = document.getElementById('cePromptInput');
+  
   if (!inputEl) {
     alert("لا يوجد input")
     return
   };
 
-  const promptText = inputEl.innerText.trim();
+  const [promptText, references] = await extarctPromptData(inputEl);
+
   if (!promptText) {
     alert("لا يوجد prompt")
     return
@@ -242,12 +228,13 @@ async function submitPrompt() {
       body: JSON.stringify({
         "prompt": promptText,
         "context": context,
-        "selected_text": selectedTextBody
+        "selected_text": selectedTextBody,
+        "references": references,
       })
     });
 
     if (!response.ok || !response.body) {
-      throw new Error("فشلت عملية الاتصال بالخادم");
+      throw new Error("Connection to Server Faild");
     }
 
     const reader = response.body.getReader();

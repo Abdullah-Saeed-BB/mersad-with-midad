@@ -11,8 +11,9 @@ from typing import Optional, List
 # ---------------------------------------------------------------------------
 
 class Reference(BaseModel):
+    id: str = Field(..., description="Reference ID.")
     title: str = Field(..., description="Reference title.")
-    script: str = Field(..., description="Reference script content.")
+    markdown: str = Field(..., description="Reference markdown content.")
 
 class WriteRequest(BaseModel):
     """Payload for the /ai/write endpoint."""
@@ -34,5 +35,5 @@ class WriteRequest(BaseModel):
     )
     references: List[Reference] = Field(
         default_factory=list,
-        description="List of reference objects with title and script.",
+        description="List of reference objects with title and markdown.",
     )
