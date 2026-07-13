@@ -1,7 +1,8 @@
-import { ceUpdateStats, ceUpdateWriterPh, ceWriterSave, uid, getAllProjects } from './main.js';
+import { ceUpdateStats, ceUpdateWriterPh, ceWriterSave, uid, getAllProjects, _allShots, _findSegForShot } from './main.js';
 
 let selectedText = null
 let currentSelectionRange = null;
+let currentAIActionType = null
 
 document.addEventListener('DOMContentLoaded', () => {
   const writerDiv = document.getElementById('ceWriterDiv');
@@ -74,6 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // 3. Popup Utilities
 // Types of popups: write-from-scratch, improve-part, add-new-part
 async function showTopPopup(type) {
+  currentAIActionType = type
+
   const popup = document.getElementById('ceTopPopup');
   const description = document.getElementById('cePopupDescription');
 
@@ -84,9 +87,9 @@ async function showTopPopup(type) {
     } else if (type == 'add-new-parts') {
       newDesc = newDesc + 'ما هي المشاهد التي تريد اضافتها؟'
     } else {
-      newDesc = newDesc + 'ما هو محتوى المشهد؟ وإلخ مباشرة'
+      newDesc = newDesc + 'ماذا تريدني ان اكتب لك؟'
     }
-    description.innerText = `${newDesc}\nيمكنك الإشارة لي نصوص سابقة عن طريق كتابة علامة '@'`
+    description.innerText = newDesc
   }
 
   if (!popup) return;
@@ -112,30 +115,88 @@ export function closeTopPopup() {
   }, 300);
 }
 
+async function waitForAllShots({
+  delay = 500,
+  maxRetries = 10
+} = {}) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return _allShots();
+    } catch (err) {
+      console.log(`Erro thorwed (${i}) - let's wait few time ;)`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+
+  throw new Error("_allShots() failed after maximum retries.");
+}
+
+async function getVideoScriptMarkdown() {
+  const scenes = await waitForAllShots()
+  
+  const videoGroups = new Map();
+
+  for (const scene of scenes) {
+    const videoTitle = _findSegForShot(scene.id);
+    
+    if (!videoGroups.has(videoTitle.title)) {
+      videoGroups.set(videoTitle.title, []);
+    }
+    
+    videoGroups.get(videoTitle.title).push(scene);
+  }
+
+  // 3. Build the Markdown string
+  let markdown = '';
+
+  for (const [videoTitle, videoScenes] of videoGroups.entries()) {
+    // Add the Video Title (Heading 1)
+    markdown += `# ${videoTitle}\n`;
+
+    // Add each Scene (Heading 2) and its content
+    for (const scene of videoScenes) {
+      markdown += `## ${scene.title}\n`;
+      markdown += `${scene.content}\n\n`;
+    }
+  }
+
+  // Return the final string, trimming any trailing whitespace/newlines
+  return markdown.trim();
+}
+
 async function submitPrompt() {
   const inputEl = document.getElementById('cePromptInput');
-  if (!inputEl) return;
+  if (!inputEl) {
+    alert("لا يوجد input")
+    return
+  };
 
-  const promptText = inputEl.value.trim();
-  if (!promptText) return;
-
-  if (!currentSelectionRange) {
-    alert("يرجى تحديد النص في المحرر أولاً.");
-    return;
-  }
+  const promptText = inputEl.innerText.trim();
+  if (!promptText) {
+    alert("لا يوجد prompt")
+    return
+  };
 
   const writer = document.getElementById('ceWriterDiv');
   if (!writer) return;
 
-  const selectedTextText = currentSelectionRange.toString();
-
   // 1. Clean the old selection coordinates
-  currentSelectionRange.deleteContents();
+  if (currentSelectionRange) {
+    currentSelectionRange.deleteContents();
+  }
   
   // Find or create a clean starting block-level div for streaming text inside the editor
-  let activeLineDiv = currentSelectionRange.anchorNode;
-  while (activeLineDiv && activeLineDiv.parentElement !== writer) {
-    activeLineDiv = activeLineDiv.parentElement;
+  let activeLineDiv = null;
+
+  if (currentSelectionRange) {
+    activeLineDiv = currentSelectionRange.anchorNode;
+    while (activeLineDiv && activeLineDiv.parentElement !== writer) {
+      activeLineDiv = activeLineDiv.parentElement;
+    }
+  } else {
+    // Create a new line
+    activeLineDiv = document.createElement('div');
+    writer.appendChild(activeLineDiv);
   }
   
   if (!activeLineDiv || activeLineDiv.nodeType !== 1) {
@@ -170,6 +231,9 @@ async function submitPrompt() {
   }
 
   try {
+    const context = (currentAIActionType !== 'write-from-scratch') ? await getVideoScriptMarkdown() : null
+    const selectedTextBody = (currentAIActionType == 'improve-part') ? selectedText : null
+
     const response = await fetch('http://localhost:8000/ai/write', { 
       method: 'POST',
       headers: {
@@ -177,7 +241,8 @@ async function submitPrompt() {
       },
       body: JSON.stringify({
         "prompt": promptText,
-        "language": "ar"
+        "context": context,
+        "selected_text": selectedTextBody
       })
     });
 
@@ -399,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.addEventListener('keydown', function(event) {
   // Check if Ctrl (Windows) or Cmd (Mac) is pressed AND 'i' key is pressed
-  if ((event.ctrlKey || event.metaKey) && event.key === 'i') {
+  if ((event.ctrlKey || event.metaKey) && (event.key === 'i' || event.key === 'I' || event.key === 'ه' )) {
     event.preventDefault(); // Prevent default browser behavior (like opening dev tools)
     
     const selStr = window.getSelection().toString().trim()

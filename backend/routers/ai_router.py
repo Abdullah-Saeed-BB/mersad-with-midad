@@ -30,6 +30,15 @@ async def write(request: WriteRequest):
     - **selected_text**: The text the user wants to update.
     - **references**: List of reference objects with title and script.
     """
+
+    print("\n\n==================================\n")
+    print("prompt:\t", request.prompt)
+    print("context:\t", request.context)
+    print("selected_text:\t", request.selected_text)
+    print("references:\t", request.references)
+    print("\n==================================\n\n")
+
+    
     return StreamingResponse(
         stream_write(prompt=request.prompt, language='en'),
         media_type="text/event-stream",

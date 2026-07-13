@@ -1473,11 +1473,11 @@ function deletePrepTask(id) {
 }
 
 // ── Segment / Shot helpers ──
-function _allShots() { return (cur.segments||[]).flatMap(s=>s.shots||[]); }
-function _findShot(id) { for(const seg of (cur.segments||[])){ const s=seg.shots?.find(s=>s.id===id); if(s) return s; } return null; }
-function _findSegForShot(id) { return (cur.segments||[]).find(seg=>seg.shots?.some(s=>s.id===id))||null; }
-function _globalShotCount() { return _allShots().length; }
-function _globalShotIndex(shotId) { let i=1; for(const seg of (cur.segments||[])){ for(const s of (seg.shots||[])){ if(s.id===shotId) return i; i++; } } return i; }
+export function _allShots() { return (cur.segments||[]).flatMap(s=>s.shots||[]); }
+export function _findShot(id) { for(const seg of (cur.segments||[])){ const s=seg.shots?.find(s=>s.id===id); if(s) return s; } return null; }
+export function _findSegForShot(id) { return (cur.segments||[]).find(seg=>seg.shots?.some(s=>s.id===id))||null; }
+export function _globalShotCount() { return _allShots().length; }
+export function _globalShotIndex(shotId) { let i=1; for(const seg of (cur.segments||[])){ for(const s of (seg.shots||[])){ if(s.id===shotId) return i; i++; } } return i; }
 
 // ── Segments ──
 function addSegment() {
