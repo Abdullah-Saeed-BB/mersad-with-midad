@@ -21,11 +21,21 @@ class AgentState(TypedDict):
 # ─────────────────────────────────────────────
 # 2. SYSTEM PROMPT BUILDER NODES
 # ─────────────────────────────────────────────
-BASE_FORMAT_RULES = """You are an expert video script writer.
-Output MUST be simple markdown following these rules:
-- Write the video title prefixed with a single `#`
-- Write every scene title prefixed with `##`
-- Keep the structure clean and easy to read."""
+try:
+    with open("./data/base_system_prompt.txt") as f:
+        BASE_FORMAT_RULES = f.read()
+except Exception as e:
+    print("\tError while loading base system prompt:", e)
+    
+    BASE_FORMAT_RULES = (
+        "You are an expert video script writer.\n"
+        "Output MUST be simple markdown following these rules:\n"
+        " - Write the video title prefixed with a single `#`\n"
+        " - Write every scene title prefixed with `##`\n"
+        " - Keep the structure clean and easy to read.\n"
+        " - No bold ** or italic __, only the markdown format that are provided."
+    )
+
 
 def build_system_prompt_scratch(state: AgentState) -> dict:
     """User wants a brand-new script from scratch."""
@@ -49,11 +59,12 @@ def build_system_prompt_extend(state: AgentState) -> dict:
 
 
 def build_system_prompt_update(state: AgentState) -> dict:
-    """User wants to update only a selected part of the script."""
+    """User wants to update only a specific selected part of the script."""
     system_prompt = (
         f"{BASE_FORMAT_RULES}\n\n"
         "The user wants you to rewrite / update only a specific selected part "
-        "of the script. Keep it consistent with the rest of the script.\n\n"
+        "of the script. Keep it consistent with the rest of the script, and "
+        "response only with new updated part, not with the whole script. \n\n"
         f"--- Full script context ---\n{state['context']}\n--- End of script ---\n\n"
         f"--- Selected text to update ---\n{state['selected_text']}\n--- End of selection ---"
     )
@@ -97,6 +108,7 @@ def call_llm(state: AgentState) -> dict:
     try:
         response = llm.invoke(messages)
         content = response.content[0]["text"]
+        # content = "This is a test. content\n# Got the\n## What I\nMean amigo. ;)"
         return {"response": content}
     except Exception as e:
         print("\tError occurs while calling LLM:", e)

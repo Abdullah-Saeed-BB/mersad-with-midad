@@ -179,8 +179,6 @@ async function submitPrompt() {
     notify("لا يوجد عنصر لكتابة الـ script فيه", "error")
     return
   };
-
-
   
   // Find or create a clean starting block-level div for streaming text inside the editor
   let activeLineDiv = null;
@@ -226,6 +224,8 @@ async function submitPrompt() {
       if (!divElement.textContent) divElement.innerHTML = '<br>';
     }
   }
+
+  closeTopPopup()
 
   try {
     const context = (currentAIActionType !== 'write-from-scratch') ? await getVideoScriptMarkdown() : null

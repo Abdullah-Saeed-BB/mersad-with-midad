@@ -33,9 +33,11 @@ async def write(request: WriteRequest):
 
     print("\n\n==================================\n")
     print("prompt:\t", request.prompt)
-    print("context:\t", request.context)
-    print("selected_text:\t", request.selected_text)
-    print("references:\t", request.references)
+    print("\ncontext:\t", request.context)
+    print("\nselected_text:\t", request.selected_text)
+    print("\nreferences:\t")
+    for ref in request.references:
+        print("\t\t", ref)
     print("\n==================================\n\n")
 
     response = call_agent(
