@@ -52,7 +52,9 @@ def build_system_prompt_extend(state: AgentState) -> dict:
     system_prompt = (
         f"{BASE_FORMAT_RULES}\n\n"
         "The user has provided an existing video script and wants you to add "
-        "new scenes or content that fit naturally with what already exists.\n\n"
+        "new scenes or content after the <|ADD_PART_HERE|> marker that fit "
+        "naturally with what already exists. and response only with the new "
+        "content, not the whole script.\n\n"
         f"--- Existing script ---\n{state['context']}\n--- End of script ---"
     )
     return {"system_prompt": system_prompt}

@@ -82,7 +82,7 @@ async function showTopPopup(type) {
 
   currentAIActionType = type
 
-  if (type === 'add-new-parts' || type === 'add-new-part') {
+  if (type === 'add-new-part') {
     const sel = window.getSelection();
     const writerDiv = document.getElementById('ceWriterDiv');
     if (sel && sel.rangeCount > 0 && writerDiv && writerDiv.contains(sel.anchorNode)) {
@@ -97,7 +97,7 @@ async function showTopPopup(type) {
     let newDesc = "معك مِداد, "
     if (type == 'improve-part') {
       newDesc = newDesc + 'ما الذي تريد تحسينه في النص المحدد؟'
-    } else if (type == 'add-new-parts') {
+    } else if (type == 'add-new-part') {
       newDesc = newDesc + 'ما هي المشاهد التي تريد اضافتها؟'
     } else {
       newDesc = newDesc + 'ماذا تريدني ان اكتب لك؟'
@@ -159,6 +159,95 @@ async function extarctPromptData(promptElm) {
   return [clone.textContent.trim(), references];
 }
 
+// Build markdown from the editor DOM, inserting a cursor marker at the saved range position
+function buildContextWithCursorMarker(writerDiv, savedRange) {
+  if (!writerDiv || !savedRange) return null;
+
+  // 1. Ensure the selection is actually inside the writerDiv
+  if (!writerDiv.contains(savedRange.startContainer)) {
+    console.warn("Cursor is outside the writer div. Cannot insert marker.");
+    return null; 
+  }
+
+  const children = Array.from(writerDiv.children);
+  if (children.length === 0) return null;
+
+  // 2. Find which direct child ELEMENT of the writer contains the cursor
+  let cursorDiv = savedRange.startContainer;
+  
+  // If it's a text node or comment, step up to its parent element
+  if (cursorDiv.nodeType === Node.TEXT_NODE || cursorDiv.nodeType === Node.COMMENT_NODE) {
+    cursorDiv = cursorDiv.parentElement;
+  }
+
+  if (cursorDiv === writerDiv) {
+    // Cursor is directly on writerDiv; use startOffset to pick the child
+    cursorDiv = children[Math.min(savedRange.startOffset, children.length - 1)] || null;
+  } else {
+    // Walk up to the direct child of writerDiv
+    while (cursorDiv && cursorDiv.parentElement !== writerDiv) {
+      cursorDiv = cursorDiv.parentElement;
+    }
+  }
+
+  // 3. Calculate text offset of the cursor within its div
+  function getTextOffsetInDiv(div, container, offset) {
+    if (container === writerDiv) return 0;
+    let textOffset = 0;
+    
+    if (container.nodeType === Node.TEXT_NODE) {
+      const walker = document.createTreeWalker(div, NodeFilter.SHOW_TEXT);
+      let node;
+      while ((node = walker.nextNode())) {
+        // FIX: Clean the text before measuring to perfectly match the final 'text' variable
+        const cleanLength = (node.textContent || '').replace(/\p{Cf}/gu, '').length;
+        if (node === container) {
+          // For the target node, clean the substring up to the offset
+          const cleanBefore = (node.textContent || '').substring(0, offset).replace(/\p{Cf}/gu, '').length;
+          textOffset += cleanBefore;
+          break;
+        }
+        textOffset += cleanLength;
+      }
+    } else {
+      for (let i = 0; i < offset && i < container.childNodes.length; i++) {
+        const cleanLength = (container.childNodes[i].textContent || '').replace(/\p{Cf}/gu, '').length;
+        textOffset += cleanLength;
+      }
+    }
+    return textOffset;
+  }
+
+  const cursorTextOffset = cursorDiv
+    ? getTextOffsetInDiv(cursorDiv, savedRange.startContainer, savedRange.startOffset)
+    : 0;
+
+  // 4. Build markdown line by line, injecting the marker at the cursor position
+  let markdown = '';
+
+  for (const div of children) {
+    const ltype = div.dataset?.ltype;
+    // Clean the text consistently
+    const text = (div.textContent || '').replace(/\p{Cf}/gu, '');
+
+    let prefix = '';
+    if (ltype === 'seg') prefix = '# ';
+    else if (ltype === 'shot') prefix = '## ';
+
+    if (div === cursorDiv) {
+      // Clamp the offset to prevent any out-of-bounds substring issues
+      const safeOffset = Math.min(cursorTextOffset, text.length);
+      const before = text.substring(0, safeOffset);
+      const after  = text.substring(safeOffset);
+      markdown += prefix + before + '<|ADD_PART_HERE|>' + after + '\n';
+    } else {
+      markdown += prefix + text + '\n';
+    }
+  }
+
+  return markdown.trim();
+}
+
 async function submitPrompt() {
   const inputEl = document.getElementById('cePromptInput');
   
@@ -179,26 +268,55 @@ async function submitPrompt() {
     notify("لا يوجد عنصر لكتابة الـ script فيه", "error")
     return
   };
+
+  let savedRange = currentSelectionRange;
+  if (!savedRange) {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      savedRange = selection.getRangeAt(0);
+    }
+  }
+
+  // Pre-build context with cursor marker BEFORE any DOM manipulation
+  let preBuiltContext = null;
+  
+  // 2. ENSURE ACTION TYPE MATCHES: Verify this is the intended action type
+  if (currentAIActionType === 'add-new-part' && savedRange) {
+    preBuiltContext = buildContextWithCursorMarker(writer, savedRange);
+    
+    // Debugging helpers: Check the console if it still fails
+    if (!preBuiltContext) {
+      console.warn("Failed to build context: Cursor might be outside the editor or editor is empty.");
+    } else if (!preBuiltContext.includes('<|ADD_PART_HERE|>')) {
+      console.warn("Marker not found in preBuiltContext: Cursor div matching failed.");
+    }
+  }
   
   // Find or create a clean starting block-level div for streaming text inside the editor
   let activeLineDiv = null;
 
-  if (currentSelectionRange) {
-    activeLineDiv = currentSelectionRange.anchorNode;
+  if (savedRange) {
+    activeLineDiv = savedRange.anchorNode;
     while (activeLineDiv && activeLineDiv.parentElement !== writer) {
       activeLineDiv = activeLineDiv.parentElement;
     }
   } else {
-    // Create a new line
     activeLineDiv = document.createElement('div');
     writer.appendChild(activeLineDiv);
   }
   
   if (!activeLineDiv || activeLineDiv.nodeType !== 1) {
-    activeLineDiv = document.createElement('div');
-    currentSelectionRange.insertNode(activeLineDiv);
+    if (savedRange) {
+      activeLineDiv = document.createElement('div');
+      savedRange.insertNode(activeLineDiv);
+    } else {
+      activeLineDiv = document.createElement('div');
+      writer.appendChild(activeLineDiv);
+    }
   }
   
+  // Clear saved range after use to prevent stale state
+  savedRange = null;
   currentSelectionRange = null;
 
   // Track text updates smoothly
@@ -228,8 +346,12 @@ async function submitPrompt() {
   closeTopPopup()
 
   try {
-    const context = (currentAIActionType !== 'write-from-scratch') ? await getVideoScriptMarkdown() : null
-    const selectedTextBody = (currentAIActionType == 'improve-part') ? selectedText : null
+    let context = null;
+    if (currentAIActionType !== 'write-from-scratch') {
+      context = preBuiltContext || await getVideoScriptMarkdown();
+    }
+    
+    const selectedTextBody = (currentAIActionType === 'improve-part') ? selectedText : null;
 
     const response = await fetch('http://localhost:8000/ai/write', { 
       method: 'POST',
@@ -478,7 +600,7 @@ document.addEventListener('keydown', function(event) {
       showTopPopup("improve-part");
     }
     else if (placeholderDisplay === "none") {
-      showTopPopup("add-new-parts");
+      showTopPopup("add-new-part");
     } else {
       showTopPopup("write-from-scratch");
     }
