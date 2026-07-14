@@ -3,5 +3,9 @@ frontend/.firebase/
 frontend/backup/
 frontend/src/assets/fonts/*/*
 
+# Backend
+backend/backend/__pycache__/
+backend/.env
+
 # unrelated to project
-_*
+_*/
