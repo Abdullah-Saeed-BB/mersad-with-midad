@@ -75,7 +75,7 @@ Before you start, install these two programs:
 pip install uv
 ```
 
-You'll also need a code editor to open the project folder. We recommend **[Visual Studio Code](https://code.visualstudio.com/)** — it's free and beginner-friendly (If you expert, use any IDE you prefer and understand). 
+You'll also need a code editor to open the project folder. We recommend **[Visual Studio Code](https://code.visualstudio.com/)** — it's free and beginner-friendly (If you expert use any IDE you prefer). 
 ### 2. Download the project
 
 1. Click the green **"Code"** button on this GitHub page and choose **"Download ZIP"**.
@@ -102,35 +102,21 @@ uv sync
 GEMINI_API_KEY=your-api-key-here
 ```
 *(You can get a free Gemini API key from [Google AI Studio](https://aistudio.google.com/).)*
+
 5. Start the backend server:
 
 ```
-uv run main.py
+uv run uvicorn main:app
 ```
-If everything worked, you'll see a message saying the server is running — leave this terminal window open.
+If everything worked, you'll see a message saying the server is running (`INFO:     Started server process`) — leave this terminal window open.
 
 ### 4. Run the frontend (what you'll see in your browser)
-
-1. Open a **second** terminal window (keep the backend one running).
-2. Navigate into the frontend folder:
-
-```
-cd frontend
-```
-
-3. Open `index.html` — the easiest way is to right-click the file in Visual Studio Code's file explorer and choose **"Open with Live Server"** (if you don't have this option, install the **Live Server** extension from the Extensions panel first).
-4. Your browser will open automatically and show the Mersad app.
+1. Install "Live Server" extension (If not installed), from the Extensions panel on the lift side.
+2. Open `/frontend/src` folder, and you will found `index.html` file, right-click the file in Visual Sudio Code and choose **""**.  
+3. Your browser will open automatically and show the Mersad app.
 
 ### 5. You're ready to go!
 
 With both the backend and frontend running, you can now use Mersad and the Midād AI assistant in your browser. If you ever want to stop the app, just close both terminal windows.
 
 > **Note:** Every time you want to use Mersad again, repeat step 3 and step 4 (starting both the backend and frontend) — you won't need to reinstall anything again.
-
-A couple of things worth confirming before you publish this:
-
-- Whether `uv run main.py` is the actual start command, or if it's something like `uv run uvicorn main:app --reload`
-- The exact name of the environment variable for your Gemini API key (I guessed `GEMINI_API_KEY` based on `db/config.py`)
-- Whether the frontend needs any config pointing it to the backend's URL/port
-
-If you paste me the contents of `backend/main.py` and `backend/db/config.py`, I can tighten up the exact commands and env variable names.
