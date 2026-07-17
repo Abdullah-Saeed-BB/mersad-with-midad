@@ -12,7 +12,7 @@
 <br>
 
 <img width="3840" height="552" alt="feature_2_impove_parts" src="https://github.com/user-attachments/assets/e430f28d-670d-4327-8153-8810f5a70e76" />
-<p align="center">القدرة على تحسين النص عن طريق تحديد الجزئية التي تريد تحسينها والضغط على ايقونة مِداد او ضغط على Ctrl + I او Cmd + I</p> 
+<p align="center">القدرة على تحسين النص عن طريق تحديد الجزئية التي تريد تحسينها والضغط على ايقونة مِداد او ضغط على Ctrl + I او Cmd + I.</p> 
 <br>
 <br>
 
