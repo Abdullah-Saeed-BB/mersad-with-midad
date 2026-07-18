@@ -1,4 +1,4 @@
-<img width="3840" height="552" alt="banner" src="https://github.com/user-attachments/assets/4419015c-e670-4ce3-a246-4ed81b6d32eb" />
+<img width="3840" height="552" alt="banner_en" src="https://github.com/user-attachments/assets/2cb6a327-eec8-4a59-97e8-59d50c8e2469" />
 <div align="center">
 <span><i>English</i></span> | <a href="https://github.com/Abdullah-Saeed-BB/mersad-with-midad/blob/main/README.md">عربي</a>
 </div>
@@ -9,17 +9,17 @@
 
 <h2 align="center">Midad Features</h2>
 
-<img width="3840" height="552" alt="feature_1_mention_content" src="https://github.com/user-attachments/assets/3e8de1c2-0a09-40e6-98bd-e801485d91ab" />
+<img width="3840" height="552" alt="feature_1_mention_content_en" src="https://github.com/user-attachments/assets/c9d28db6-2e3c-4718-a456-e5b80351d5a7" />
 <p align="center" dir="ltr">More than just a chatbot—you can reference previously created content without copying and pasting it.</p>
 <br>
 <br>
 
-<img width="3840" height="552" alt="feature_2_impove_parts" src="https://github.com/user-attachments/assets/e430f28d-670d-4327-8153-8810f5a70e76" />
+<img width="3840" height="552" alt="feature_2_improve_parts_en" src="https://github.com/user-attachments/assets/076f836d-0c7f-4f44-90a0-39efe70153c3" />
 <p align="center" dir="ltr">Improve selected text by highlighting the section you want to refine, then clicking the Midad icon or pressing <code>Ctrl + I</code> (or <code>Cmd + I</code> on macOS).</p>
 <br>
 <br>
 
-<img width="3840" height="552" alt="feature_3_write_from_scratch" src="https://github.com/user-attachments/assets/d0b6db9e-a80b-46fa-81bd-afe7a9b87c1a" />
+<img width="3840" height="552" alt="feature_3_write_from_scratch_en" src="https://github.com/user-attachments/assets/203d7322-e90b-4219-8cab-377ab3e964a4" />
 <p align="center" dir="ltr">Generate complete content from scratch with a single prompt.</p>
 <br>
 <br>
