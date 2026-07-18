@@ -1,4 +1,7 @@
 <img width="3840" height="552" alt="banner" src="https://github.com/user-attachments/assets/4419015c-e670-4ce3-a246-4ed81b6d32eb" />
+<div align="center">
+<span><i>English</i></span> | <a href="https://github.com/Abdullah-Saeed-BB/mersad-with-midad/blob/main/README.md">عربي</a>
+</div>
 
 <h1 align="center">Midad</h1>
 <h3 align="center">An AI assistant designed to help photographers and writers create content. It is integrated into Mirsad, a platform for organizing and managing photography workflows.</h3>
