@@ -442,3 +442,85 @@
   background: rgba(0, 0, 0, 0.2);
   /* backdrop-filter: blur(2px); Softly blur out the background editor */
 }
+
+.ce-model-select-container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    margin: 0 0 16px;
+}
+
+.ce-field-label {
+    color: var(--text-2);
+
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.ce-select-wrapper {
+    position: relative;
+    width: fit-content;
+}
+
+.ce-select-wrapper::after {
+    content: "";
+
+    position: absolute;
+
+    top: 50%;
+    left: 12px;
+
+    width: 7px;
+    height: 7px;
+
+    border-right: 2px solid var(--text-2);
+    border-bottom: 2px solid var(--text-2);
+
+    transform: translateY(-65%) rotate(45deg);
+
+    pointer-events: none;
+}
+
+.ce-model-select {
+    appearance: none;
+
+    width: 240px;              /* Smaller width */
+    height: 36px;              /* Compact height */
+
+    padding: 0 14px 0 34px;
+
+    background: var(--surface-1);
+
+    color: var(--text-1);
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+
+    font-family: var(--font-body);
+    font-size: 13px;
+
+    cursor: pointer;
+
+    transition:
+        border-color .18s ease,
+        background .18s ease,
+        box-shadow .18s ease;
+}
+
+.ce-model-select:hover {
+    background: var(--surface-2);
+}
+
+.ce-model-select:focus {
+    outline: none;
+
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.ce-model-select option {
+    background: var(--bg);
+    color: var(--text-1);
+}

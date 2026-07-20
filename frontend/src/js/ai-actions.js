@@ -388,6 +388,8 @@ async function submitPrompt() {
     
     const selectedTextBody = (currentAIActionType === 'improve-part') ? selectedText : null;
 
+    const selectedModel = document.getElementById('ceModelSelect')?.value || "gemini-3.1-flash-lite";
+
     const response = await fetch('http://localhost:8000/ai/write', { 
       method: 'POST',
       headers: {
@@ -398,6 +400,7 @@ async function submitPrompt() {
         "context": context,
         "selected_text": selectedTextBody,
         "references": references,
+        "model": selectedModel,
       })
     });
 

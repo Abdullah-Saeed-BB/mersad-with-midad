@@ -37,3 +37,7 @@ class WriteRequest(BaseModel):
         default_factory=list,
         description="List of reference objects with title and markdown.",
     )
+    model: Optional[str] = Field(
+        "gemini-3.1-flash-lite",
+        description="Model to use.",
+    )

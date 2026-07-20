@@ -45,6 +45,7 @@ async def write(request: WriteRequest):
         context=request.context,
         selected_text=request.selected_text,
         references=request.references,
+        model=request.model,
     )
 
     return StreamingResponse(

@@ -17,6 +17,7 @@ class AgentState(TypedDict):
     references: Optional[List[str]]      # Previous scripts as reference (optional)
     system_prompt: str                   # Built system prompt fed to LLM
     response: Optional[str]              # Final generated output
+    model: Optional[str]                 # Model to use
 
 
 # ─────────────────────────────────────────────
@@ -98,11 +99,15 @@ def add_references(state: AgentState) -> dict:
 # ─────────────────────────────────────────────
 def call_llm(state: AgentState) -> dict:
     """Feed system_prompt + user prompt to the LLM and return the response."""
+    
+    model_title = state.get("model") or "gemini-3.1-flash-lite"
     llm = init_chat_model(
-        model="gemini-3.1-flash-lite",
+        model=model_title,
         model_provider="google_genai",
         api_key=os.getenv("GEMINI_API_KEY")
     )
+
+    print("used model:", model_title)
 
     messages = [
         {"role": "system", "content": state["system_prompt"]},
@@ -177,7 +182,8 @@ def _sse(data: str) -> str:
 def call_agent(prompt: str,
                context: Optional[str] = None,
                selected_text: Optional[str] = None,
-               references: Optional[List[str]] = None) -> dict:
+               references: Optional[List[str]] = None,
+               model: Optional[str] = None) -> dict:
 
     state = {
         "prompt": prompt,
@@ -186,6 +192,7 @@ def call_agent(prompt: str,
         "references": references,
         "system_prompt": "",
         "response": None,
+        "model": model,
     }
 
     result = agent.invoke(state)
