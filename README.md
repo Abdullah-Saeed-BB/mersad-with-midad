@@ -5,7 +5,7 @@
 
 <h1 align="center">مِداد</h1>
 <h3 align="center">هو مساعد ذكاء اصطناعي صمم لمساعدة المصورين والكُتاب في كتابة محتوى, وهو اضافة في مِرصاد وهو تطبيق لتنظيم وإدارة عمليات التصوير.</h3>
-<h3 align="center">تم استعمال نموذج <code>Gemini 3.1 Flash-Lite</code> كعقل لي مِداد. <a href="https://youtu.be/-Ci57ixH0Fs" target="_blank">فيديو اجرب فيه مِداد</a></h3>
+<h3 align="center">تم استعمال نماذج <b>Gemini</b> كعقل لي مِداد. <a href="https://youtu.be/-Ci57ixH0Fs" target="_blank">فيديو اجرب فيه مِداد</a></h3>
 
 <h2 align="center">إمكانيات مِداد</h2>
 
