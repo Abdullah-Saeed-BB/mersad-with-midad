@@ -2,6 +2,7 @@ import { ceUpdateStats, ceUpdateWriterPh, ceWriterSave, uid, getAllProjects, _al
 import { getVideoScriptMarkdown, getProjectMarkdown, refreshProjects } from './get-scripts.js'
 import { notify } from './notification.js';
 import { showAnimation, hideAnimation } from './icon_animation.js';
+import { callAgent } from './ai-agent.js';
 
 let selectedText = null
 let currentSelectionRange = null;
@@ -390,100 +391,51 @@ async function submitPrompt() {
 
     const selectedModel = document.getElementById('ceModelSelect')?.value || "gemini-3.1-flash-lite";
 
-    const response = await fetch('http://localhost:8000/ai/write', { 
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        "prompt": promptText,
-        "context": context,
-        "selected_text": selectedTextBody,
-        "references": references,
-        "model": selectedModel,
-      })
-    });
+    const state = {
+      prompt: promptText,
+      context: context,
+      selected_text: selectedTextBody,
+      references: references,
+      model: selectedModel,
+    };
 
     
-    if (!response.ok || !response.body) {
-      hidePopupBg();
-      hideAnimation();
-      notify("فشل الاتصال بالخادم", "error")
-      throw new Error("Connection to Server Faild");
-    }
-    
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder("utf-8");
-    let buffer = "";
     let animationHidden = false;
+    const stream = callAgent(state);
 
-    while (true) {
-      const { value, done } = await reader.read();
-      
+    for await (const rawChunk of stream) {
       if (!animationHidden) {
         hidePopupBg();
         hideAnimation();
         animationHidden = true;
       }
 
-      if (done) break;
+      const components = rawChunk.split(/(\n)/g);
+      for (const item of components) {
+        if (item === '\n') {
+          // ── FIX: Evaluate line syntax ONLY when the line is completely finished ──
+          evaluateLineSyntax(activeLineDiv);
 
-      buffer += decoder.decode(value, { stream: true });
-
-      let packets = buffer.split('\n\n');
-      buffer = packets.pop();
-
-      for (let packet of packets) {
-        if (!packet.trim()) continue;
-
-        const lines = packet.split('\n');
-        let dataBuffer = [];
-        
-        for (const line of lines) {
-          if (line.startsWith('data:')) {
-            let val = line.substring(5);
-            if (val.startsWith(' ')) {
-              val = val.substring(1);
-            }
-            dataBuffer.push(val);
-          }
+          // Generate an official structural paragraph row child element
+          const newLineDiv = document.createElement('div');
+          
+          // Append right after our current operational element block
+          activeLineDiv.insertAdjacentElement('afterend', newLineDiv);
+          activeLineDiv = newLineDiv;
+          
+          currentActiveTextNode = document.createTextNode("");
+          activeLineDiv.appendChild(currentActiveTextNode);
+        } else if (item) {
+          currentActiveTextNode.appendData(item);
+          // REMOVED evaluateLineSyntax from here so it doesn't interrupt mid-word streaming
         }
-
-        if (dataBuffer.length === 0) continue;
-        let rawChunk = dataBuffer.join('\n');
-
-        if (rawChunk.trim() === "[DONE]") {
-          editor.contentEditable = true;
-          break;
-        }
-
-        const components = rawChunk.split(/(\n)/g);
-
-        for (const item of components) {
-          if (item === '\n') {
-            // ── FIX: Evaluate line syntax ONLY when the line is completely finished ──
-            evaluateLineSyntax(activeLineDiv);
-
-            // Generate an official structural paragraph row child element
-            const newLineDiv = document.createElement('div');
-            
-            // Append right after our current operational element block
-            activeLineDiv.insertAdjacentElement('afterend', newLineDiv);
-            activeLineDiv = newLineDiv;
-            
-            currentActiveTextNode = document.createTextNode("");
-            activeLineDiv.appendChild(currentActiveTextNode);
-          } else if (item) {
-            currentActiveTextNode.appendData(item);
-            // REMOVED evaluateLineSyntax from here so it doesn't interrupt mid-word streaming
-          }
-        }
-        
-        // Refresh structural UI parameters, counter displays, and placeholder properties
-        ceUpdateWriterPh();
-        ceUpdateStats();
       }
+        
+      // Refresh structural UI parameters, counter displays, and placeholder properties
+      ceUpdateWriterPh();
+      ceUpdateStats();
     }
+    editor.contentEditable = true;
 
     // Final sweep check on the closing block element line state boundary
     evaluateLineSyntax(activeLineDiv);
