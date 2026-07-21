@@ -27,10 +27,10 @@
 ---
 
 ## هيكلة المشروع 
-### الواجهة (Frontend)
-كامل تفاصيل هيكلة المشروع للواجهة متواجدة في فرع (Branch) الـ [mersad-base](https://github.com/Abdullah-Saeed-BB/mersad-with-midad/tree/mersad-base#%D9%87%D9%8A%D9%84%D9%83%D8%A9-%D8%A7%D9%84%D9%85%D8%B4%D8%B1%D9%88%D8%B9), سأشرح هنا ما تم اضافته وتعديله فقط من الفرع الاصلي:
+كامل تفاصيل هيكلة المشروع متواجدة في فرع (Branch) الـ [mersad-base](https://github.com/Abdullah-Saeed-BB/mersad-with-midad/tree/mersad-base#%D9%87%D9%8A%D9%84%D9%83%D8%A9-%D8%A7%D9%84%D9%85%D8%B4%D8%B1%D9%88%D8%B9), سأشرح هنا ما تم اضافته وتعديله فقط من الفرع الاصلي:
 - مجلد `src/js`:
-	 - إنشاء `ai-action.js`: يحتوي على جميع الاكواد الخاصة لإرسال طلب المستخدم للذكاء الاصطناعي, وتحميل الإجابة ووضعها في محرر المحتوى.
+	 - إنشاء `ai-agent.js`: يحتوي الكود الرئيسي لعمليات وكيل الذكاء الاصطناعي.
+	 - إنشاء `ai-popup.js`: يحتوي على جميع الاكواد إرسال طلب المستخدم للذكاء الاصطناعي, ووضع المحتوى المنشئ في المحرر.
 	 - إنشاء `get-scripts.js`: يحتوي على اوامر الخاصة بي بجلب المحتويات وتنسيقها.
 	 - إنشاء `notification.js`: يحتوي على اوامر لإنشاء إشعارات لتحذير المستخدم بأمر ما او بحدوث خطأ.
 	 - تعديل على `main.js`: تم عمل تعديلات بسيطة, لأتمكن من تحميل بعض الأوامر من خارج الملف.
@@ -42,26 +42,6 @@
 	 - إنشاء `notification.css`: يحتوي على تنسيقات الإشعارات.
  - مجلد `src/assets`:
 	 - تم إضافة مجلد `images/` الذي يحتوي على شعار مِداد, و إضافة مجلد `icon_frames/` الذي يحتوي على إطارات لانميشن الانتظار.
-
-### الخادم (Backend)
-**محتويات مجلد الخادم:**
- - الـ `main.py`: نقطة الدخول لتطبيق FastAPI. ابدأ تشغيل الخادم من هنا.
- - الـ `dependencies.py`: الاعتماديات المشتركة. حقن جلسات قاعدة البيانات والإعدادات.
- - الـ `data/base_system_prompt.txt`: يحتوي على التعليمات الأساسية لوكيل الذكاء الاصطناعي.
- - الـ `db/`: 
-	 - الـ `config.py`: تحميل متغيرات البيئة وإعدادات التطبيق.
-	 - الـ `schemas.py`: مخططات التحقق باستخدام Pydantic ونماذج البيانات.
- - الـ `routers/ai_router`: نقاط النهاية التي تمكن الواجهة بالتواصل مع الذكاء الاصطناعي,.
- - الـ `agent/ai_agent.py`: الكود الرئيسي لعمليات وكيل الذكاء الاصطناعي.
-
-**الأدوات المستعملة لبناء الخادم:**
-
-<div align="right">
-<img src="https://img.shields.io/badge/Python-Programming%20Languge-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
-<img src="https://img.shields.io/badge/FastAPI-Backend-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI">
-<img src="https://img.shields.io/badge/LangGraph-AI%20Agent-0F172A?style=for-the-badge&logo=langchain&logoColor=white" alt="LangGraph">
-</div>
-
 
 ## التثبيت و التشغيل
 > قد تكون عملية التثبيت المشروع معقدة لدى البعض, فإذا واجهتكم اي مشكلة لا تتردو بالتواصل معي في [لينكدإن](https://www.linkedin.com/in/abdullahsaeed-dev/) او [أكس](https://x.com/Abdullah_SBB) (تويتر سابقاً).
