@@ -27,8 +27,6 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="application-name" content="مِرصاد">
   <link rel="icon" type="image/png" sizes="192x192" href="../public/icon-192.png">
-<!-- Google Identity Services — works inside iOS WKWebView (no redirect/popup needed) -->
-  <script src="./js/auth.js"></script>
 </head>
 <body>
 
@@ -8002,7 +8000,7 @@ function buildSystemPrompt(state) {
 }
 
 function updateGeminiAPIKey() {
-  let apiKey = prompt("يرجى إدخال مفتاح واجهة برمجة تطبيقات (API Key) Gemini الخاص بك:");
+  let apiKey = prompt("يرجى إدخال مفتاح واجهة برمجة تطبيقات (API Key) Gemini الخاص بك:\nتستطيع الحصول عليه من Google AI Studio مجاناً.");
   if (apiKey) {
     localStorage.setItem("GEMINI_API_KEY", apiKey.trim());
   } else {
