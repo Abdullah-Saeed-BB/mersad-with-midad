@@ -1,5 +1,7 @@
 <img width="1919" height="448" alt="banner" src="https://github.com/user-attachments/assets/dd1a7fe2-7d85-4f45-bf79-cb792231374f" />
-
+<div align="center">
+	<a href="https://github.com/Abdullah-Saeed-BB/mersad-with-midad/blob/main/README_en.md">English</a> | <span><i>عربي</i></span>
+</div>
 
 
 # نظرة عامة
